@@ -1,0 +1,43 @@
+baseURL = "https://stratton.life/"
+languageCode = "en-us"
+title = "The Strattons in Japan"
+theme = "ananke"
+enableRobotsTXT = false
+
+[params]
+  recent_posts_number = 12
+  env = "production"
+
+[params.ananke.social.follow]
+  networks = ["x-twitter", "github"]
+
+[params.ananke.social.x-twitter]
+  profilelink = "https://x.com/Strattons2Japan/"
+
+[params.ananke.social.github]
+  username = "jimmytortilla"
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[[menu.main]]
+  name = "Our Story"
+  url = "/about/"
+  weight = 1
+[[menu.main]]
+  name = "Prayer & News"
+  url = "/post/"
+  weight = 2
+[[menu.main]]
+  name = "Reach Out"
+  url = "/contact/"
+  weight = 3
+[[menu.main]]
+  name = "Support"
+  url = "/support/"
+  weight = 4
+  
+[[menu.main]]
+  name = "Privacy"
+  url = "/privacy/"
+  weight = 5
