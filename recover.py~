@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+import re, shutil
+from html import unescape
+from pathlib import Path
+
+pub = Path.home() / "sites" / "thestrattons"
+src = Path.home() / "sites" / "stratton-hugo"
+
+def y(s):
+    s = unescape(s).replace("\\", "\\\\").replace('"', '\\"').replace("\n", " ")
+    return '"' + s + '"'
+
+def meta(html):
+    def g(pat):
+        m = re.search(pat, html, re.S)
+        return unescape(m.group(1)).strip() if m else ""
+    title = g(r'property="og:title" content="(.*?)"')
+    desc = g(r'property="og:description" content="(.*?)"')
+    img = g(r"background-image: url\('([^']+)'\)")
+    img = re.sub(r"^https://stratton\.life", "", img)
+    date = g(r'<time[^>]*datetime="([^"]+)"').replace("+00:00", "Z")
+    return title, desc, img, date
+
+def article_html(html):
+    m = re.search(r'<section class="nested-copy-line-height[^"]*">(.*)', html, re.S)
+    if not m:
+        return ""
+    body = m.group(1)
+    for marker in ('<ul class="pa0">', '<div class="mt6">'):
+        cut = body.find(marker)
+        if cut != -1:
+            body = body[:cut]
+            break
+    return body.replace("<!-- raw HTML omitted -->", "").strip() + "\n"
+
+def section_html(html):
+    m = re.search(r'<section class="cf ph3[^"]*">(.*?)</section>', html, re.S)
+    if not m:
+        m = re.search(r'<article class="cf ph3[^"]*">(.*?)</article>', html, re.S)
+    if not m:
+        return ""
+    return m.group(1).replace("<!-- raw HTML omitted -->", "").strip() + "\n"
+
+def write_page(rel, html, kind):
+    title, desc, img, date = meta(html)
+    body = article_html(html) if kind == "single" else section_html(html)
+    fm = ["---", f"title: {y(title)}"]
+    if date and kind == "single":
+        fm.append(f"date: {date}")
+    if desc and len(desc) <= 140:
+        fm.append(f"description: {y(desc)}")
+    if img:
+        fm.append(f"featured_image: {y(img)}")
+    fm.append("---")
+    path = src / "content" / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(fm) + "\n\n" + body)
+    print("wrote", rel)
+
+write_page("_index.md", (pub / "index.html").read_text(errors="replace"), "section")
+write_page("post/_index.md", (pub / "post/index.html").read_text(errors="replace"), "section")
+write_page("about/_index.md", (pub / "about/index.html").read_text(errors="replace"), "section")
+write_page("support/_index.md", (pub / "support/index.html").read_text(errors="replace"), "section")
+write_page("about/our_story.md", (pub / "about/our_story/index.html").read_text(errors="replace"), "single")
+write_page("about/hopes.md", (pub / "about/hopes/index.html").read_text(errors="replace"), "single")
+
+chtml = (pub / "contact/index.html").read_text(errors="replace")
+title, desc, img, date = meta(chtml)
+m = re.search(r'<div class="nested-copy-line-height[^"]*">(.*)', chtml, re.S)
+body = m.group(1)
+body = body[:body.find("<form")]
+body = body.replace("<!-- raw HTML omitted -->", "").strip()
+contact = "\n".join([
+    "---",
+    f"title: {y(title)}",
+    f"description: {y(desc)}",
+    f"featured_image: {y(img)}",
+    "---",
+    "",
+    body,
+    "",
+    '{{< form-contact action="https://formspree.io/neitoinjapan_1@runbox.com" >}}',
+    "",
+])
+(src / "content/contact.md").write_text(contact)
+print("wrote contact.md")
+
+for d in sorted((pub / "post").iterdir()):
+    if not d.is_dir() or d.name == "page":
+        continue
+    if d.name == "prayer_new05182020":
+        print("skipped duplicate", d.name)
+        continue
+    write_page(f"post/{d.name}.md", (d / "index.html").read_text(errors="replace"), "single")
+
+for folder in ("images", "videos"):
+    dest = src / "static" / folder
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(pub / folder, dest)
+    print("copied", folder)
+
+(src / "static/CNAME").write_text("stratton.life\n")
+(src / "static/robots.txt").write_text(
+    "User-agent: *\nAllow: /\n\nSitemap: https://stratton.life/sitemap.xml\n"
+)
+(src / "hugo.toml").write_text("""\
+baseURL = "https://stratton.life/"
+languageCode = "en-us"
+title = "The Strattons in Japan"
+theme = "ananke"
+enableRobotsTXT = false
+
+[params]
+  recent_posts_number = 12
+  env = "production"
+
+[params.ananke.social.follow]
+  networks = ["github"]
+
+[params.ananke.social.github]
+  username = "jimmytortilla"
+
+[markup.goldmark.renderer]
+  unsafe = true
+
+[[menu.main]]
+  name = "Our Story"
+  url = "/about/"
+  weight = 1
+[[menu.main]]
+  name = "Prayer & News"
+  url = "/post/"
+  weight = 2
+[[menu.main]]
+  name = "Reach Out"
+  url = "/contact/"
+  weight = 3
+[[menu.main]]
+  name = "Support"
+  url = "/support/"
+  weight = 4
+""")
+(src / "archetypes").mkdir(exist_ok=True)
+(src / "archetypes/default.md").write_text("""\
+---
+title: "{{ replace .File.ContentBaseName "-" " " | title }}"
+date: {{ .Date }}
+draft: true
+description: ""
+featured_image: "/images/your-photo.jpg"
+---
+""")
+(src / ".gitignore").write_text("/public/\n/resources/\n.hugo_build.lock\nrecover.py\n")
+print("done")
+
