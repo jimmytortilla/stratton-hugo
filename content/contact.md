@@ -9,5 +9,5 @@ featured_image: "/images/singing_bird.jpg"
 <p>Or you can write by filling in the form boxes below and pressing the <strong>Send</strong> button.</p>
 <p>Please read our <a href="/privacy/">privacy notice</a> before you write. By sending the form, you agree that we may use your name and email address to reply, as that notice describes.</p>
 
-{{< form-contact action="https://formspree.io/neitoinjapan_1@runbox.com" >}}
+{{< form-contact action="https://formspree.io/f/neitoinjapan_1@runbox.com" >}}
 

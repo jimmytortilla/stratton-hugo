@@ -79,7 +79,7 @@ contact = "\n".join([
     "",
     body,
     "",
-    '{{< form-contact action="https://formspree.io/neitoinjapan@lavabit.com" >}}',
+    '{{< form-contact action="https://formspree.io/neitoinjapan_1@runbox.com" >}}',
     "",
 ])
 (src / "content/contact.md").write_text(contact)
