@@ -6,7 +6,7 @@ featured_image: "/images/september-2026.jpg"
 draft: false
 ---
 
-Praise the LORD! Oh give thanks to the LORD, for he is good, for his steadfast love endures forever! (Psalm 106:1, ESV)
+Praise the LORD! Oh give thanks to the LORD, for he is good, for his steadfast love endures forever! (Psalm 106:1 ~ ESV)
 
 It has been several years since I have added to this blog. Truth be told, I had not done it in such a long time that I completely forgot how to add content. After a while of trying to remember and after a loss of much of my data on a disc drive, I gave up. 
 
